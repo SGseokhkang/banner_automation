@@ -3,10 +3,11 @@
   "id": "banner-automation",
   "api": "1.0.0",
   "main": "code.js",
-  "ui": "ui.html",
+  "ui": "https://banner-automation-rnv1u5fop-seokhkangs-projects.vercel.app/",
   "documentAccess": "dynamic-page",
   "networkAccess": {
     "allowedDomains": [
+      "https://banner-automation-rnv1u5fop-seokhkangs-projects.vercel.app",
       "https://banner-automation-7xukbc2gq-seokhkangs-projects.vercel.app",
       "https://banner-automation.vercel.app",
       "http://localhost:3000"
@@ -20,4 +21,4 @@
   "editorType": [
     "figma"
   ]
-} 
+}
