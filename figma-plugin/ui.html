@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Banner Automation Plugin</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 12px;
+      background: var(--figma-color-bg);
+      color: var(--figma-color-text);
+      padding: 16px;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    .header {
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--figma-color-border);
+    }
+
+    .header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      color: var(--figma-color-text-secondary);
+      font-size: 11px;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--figma-color-text);
+    }
+
+    .button {
+      background: var(--figma-color-bg-brand);
+      color: var(--figma-color-text-onbrand);
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .button:hover {
+      background: var(--figma-color-bg-brand-hover);
+    }
+
+    .button.secondary {
+      background: var(--figma-color-bg-secondary);
+      color: var(--figma-color-text);
+      border: 1px solid var(--figma-color-border);
+    }
+
+    .button.secondary:hover {
+      background: var(--figma-color-bg-hover);
+    }
+
+    .input-group {
+      margin-bottom: 12px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      margin-bottom: 4px;
+      color: var(--figma-color-text);
+    }
+
+    .input-group input, .input-group textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--figma-color-border);
+      border-radius: 4px;
+      background: var(--figma-color-bg);
+      color: var(--figma-color-text);
+      font-size: 11px;
+      font-family: inherit;
+    }
+
+    .input-group textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .input-group input:focus, .input-group textarea:focus {
+      outline: none;
+      border-color: var(--figma-color-border-brand);
+      box-shadow: 0 0 0 2px var(--figma-color-border-brand-strong);
+    }
+
+    .status {
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    .status.success {
+      background: var(--figma-color-bg-success);
+      color: var(--figma-color-text-success);
+      border: 1px solid var(--figma-color-border-success);
+    }
+
+    .status.error {
+      background: var(--figma-color-bg-danger);
+      color: var(--figma-color-text-danger);
+      border: 1px solid var(--figma-color-border-danger);
+    }
+
+    .data-display {
+      background: var(--figma-color-bg-secondary);
+      border: 1px solid var(--figma-color-border);
+      border-radius: 4px;
+      padding: 8px;
+      font-size: 10px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .footer {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--figma-color-border);
+      display: flex;
+      gap: 8px;
+    }
+
+    .footer .button {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .toggle-section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .toggle {
+      width: 32px;
+      height: 18px;
+      background: var(--figma-color-bg-secondary);
+      border: 1px solid var(--figma-color-border);
+      border-radius: 9px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .toggle.active {
+      background: var(--figma-color-bg-brand);
+      border-color: var(--figma-color-bg-brand);
+    }
+
+    .toggle::after {
+      content: '';
+      width: 14px;
+      height: 14px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      transition: all 0.2s ease;
+    }
+
+    .toggle.active::after {
+      left: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎨 Banner Automation</h1>
+      <p>Figma 디자인을 프론트엔드에서 활용하세요</p>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <!-- Selection Info Section -->
+    <div class="section">
+      <div class="section-title">📋 선택된 요소</div>
+      <button class="button secondary" onclick="getSelection()">
+        현재 선택 요소 가져오기
+      </button>
+      <div id="selection-data" class="data-display" style="display: none;"></div>
+    </div>
+
+    <!-- Banner Creation Section -->
+    <div class="section">
+      <div class="section-title">🚀 배너 생성</div>
+      
+      <div class="input-group">
+        <label for="banner-name">배너 이름</label>
+        <input type="text" id="banner-name" placeholder="예: 프로모션 배너" value="자동 생성 배너">
+      </div>
+
+      <div class="input-group">
+        <label for="banner-text">텍스트 내용</label>
+        <textarea id="banner-text" placeholder="배너에 들어갈 텍스트를 입력하세요">🎉 특별 할인 이벤트
+지금 바로 확인하세요!</textarea>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <div class="input-group" style="flex: 1;">
+          <label for="banner-width">너비 (px)</label>
+          <input type="number" id="banner-width" value="800">
+        </div>
+        <div class="input-group" style="flex: 1;">
+          <label for="banner-height">높이 (px)</label>
+          <input type="number" id="banner-height" value="400">
+        </div>
+      </div>
+
+      <button class="button" onclick="createBanner()">
+        🎨 배너 생성하기
+      </button>
+    </div>
+
+    <!-- Export Section -->
+    <div class="section">
+      <div class="section-title">📤 디자인 내보내기</div>
+      
+      <div class="toggle-section">
+        <label>이미지 포함</label>
+        <div class="toggle" id="include-images-toggle" onclick="toggleIncludeImages()"></div>
+      </div>
+
+      <div class="input-group">
+        <label for="export-scale">이미지 스케일</label>
+        <input type="number" id="export-scale" value="2" min="1" max="4" step="0.5">
+      </div>
+
+      <button class="button" onclick="exportDesign()">
+        📱 프론트엔드로 내보내기
+      </button>
+      
+      <div id="export-data" class="data-display" style="display: none;"></div>
+    </div>
+
+    <!-- Web App Integration -->
+    <div class="section">
+      <div class="section-title">🌐 웹앱 연동</div>
+      <button class="button secondary" onclick="openWebApp()">
+        🚀 웹앱에서 보기
+      </button>
+      <button class="button secondary" onclick="sendToWebApp()">
+        📡 웹앱으로 데이터 전송
+      </button>
+    </div>
+
+    <div class="footer">
+      <button class="button secondary" onclick="closePlugin()">닫기</button>
+      <button class="button secondary" onclick="getPageData()">페이지 정보</button>
+    </div>
+  </div>
+
+  <script>
+    let includeImages = false;
+
+    // Send message to plugin code
+    function sendMessage(type, data) {
+      parent.postMessage({ pluginMessage: { type, data } }, '*');
+    }
+
+    // Show status message
+    function showStatus(message, type = 'success') {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.className = `status ${type}`;
+      status.style.display = 'block';
+      
+      setTimeout(() => {
+        status.style.display = 'none';
+      }, 3000);
+    }
+
+    // Get selected elements
+    function getSelection() {
+      sendMessage('get-selection');
+      showStatus('선택된 요소를 가져오는 중...', 'success');
+    }
+
+    // Get page data
+    function getPageData() {
+      sendMessage('get-page-data');
+      showStatus('페이지 데이터를 가져오는 중...', 'success');
+    }
+
+    // Create banner
+    function createBanner() {
+      const data = {
+        name: document.getElementById('banner-name').value,
+        text: document.getElementById('banner-text').value,
+        width: parseInt(document.getElementById('banner-width').value),
+        height: parseInt(document.getElementById('banner-height').value),
+        backgroundColor: { r: 0.2, g: 0.4, b: 0.8 }, // Blue background
+        fontSize: 24,
+        textX: 50,
+        textY: 50
+      };
+
+      sendMessage('create-banner', data);
+      showStatus('배너를 생성하는 중...', 'success');
+    }
+
+    // Toggle include images
+    function toggleIncludeImages() {
+      includeImages = !includeImages;
+      const toggle = document.getElementById('include-images-toggle');
+      if (includeImages) {
+        toggle.classList.add('active');
+      } else {
+        toggle.classList.remove('active');
+      }
+    }
+
+    // Export design
+    function exportDesign() {
+      const options = {
+        includeImages,
+        scale: parseFloat(document.getElementById('export-scale').value)
+      };
+
+      sendMessage('export-design', options);
+      showStatus('디자인을 내보내는 중...', 'success');
+    }
+
+    // Open web app
+    function openWebApp() {
+      const url = 'https://banner-automation-7xukbc2gq-seokhkangs-projects.vercel.app';
+      // Note: Figma plugins can't directly open external URLs
+      // This would need to be handled differently
+      showStatus('웹앱 URL: ' + url, 'success');
+    }
+
+    // Send data to web app
+    function sendToWebApp() {
+      // This would typically involve API calls to your Next.js app
+      showStatus('웹앱 연동 기능은 개발 중입니다...', 'success');
+    }
+
+    // Close plugin
+    function closePlugin() {
+      sendMessage('close-plugin');
+    }
+
+    // Listen for messages from plugin code
+    window.addEventListener('message', event => {
+      const { type, data, message } = event.data.pluginMessage || {};
+
+      switch (type) {
+        case 'selection-data':
+          document.getElementById('selection-data').textContent = JSON.stringify(data, null, 2);
+          document.getElementById('selection-data').style.display = 'block';
+          showStatus(`${data.length}개의 요소를 가져왔습니다`, 'success');
+          break;
+
+        case 'page-data':
+          showStatus(`페이지 "${data.name}"의 데이터를 가져왔습니다`, 'success');
+          console.log('Page data:', data);
+          break;
+
+        case 'banner-created':
+          showStatus(`배너 "${data.name}"가 생성되었습니다!`, 'success');
+          break;
+
+        case 'export-complete':
+          document.getElementById('export-data').textContent = JSON.stringify(data, null, 2);
+          document.getElementById('export-data').style.display = 'block';
+          showStatus(`${data.length}개의 요소를 내보냈습니다`, 'success');
+          break;
+
+        case 'error':
+          showStatus(message, 'error');
+          break;
+
+        default:
+          console.log('Unknown message type:', type);
+      }
+    });
+
+    // Initialize
+    console.log('Banner Automation Plugin UI loaded!');
+  </script>
+</body>
+</html> 

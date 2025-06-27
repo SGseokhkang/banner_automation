@@ -1,0 +1,23 @@
+{
+  "name": "Banner Automation Plugin",
+  "id": "banner-automation",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": [
+      "https://banner-automation-7xukbc2gq-seokhkangs-projects.vercel.app",
+      "https://banner-automation.vercel.app",
+      "http://localhost:3000"
+    ]
+  },
+  "permissions": [
+    "currentuser"
+  ],
+  "capabilities": [],
+  "enableProposedApi": false,
+  "editorType": [
+    "figma"
+  ]
+} 

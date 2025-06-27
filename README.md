@@ -81,6 +81,36 @@ NEXT_PUBLIC_APP_URL=your-vercel-url
 - ✅ 보안 헤더 설정
 - ✅ Vercel 배포 최적화
 - ✅ 번들 분석 도구 포함
+- ✅ **Figma 플러그인 연동** 🎨
+
+## 🎨 Figma 플러그인 사용법
+
+### 1. Figma 플러그인 설치
+
+1. Figma 데스크탑 앱 실행
+2. **Plugins** → **Development** → **Import plugin from manifest** 선택
+3. 프로젝트의 `figma-plugin/manifest.json` 파일 선택
+4. 플러그인 설치 완료!
+
+### 2. 플러그인 사용하기
+
+1. Figma에서 **Plugins** → **Development** → **Banner Automation Plugin** 실행
+2. 디자인 요소를 선택하고 플러그인에서 작업
+3. **"프론트엔드로 내보내기"** 클릭
+4. 웹앱의 `/figma` 페이지에서 데이터 확인
+
+### 3. 주요 기능
+
+- **🎨 배너 자동 생성**: 텍스트와 설정으로 배너 생성
+- **📤 디자인 내보내기**: 선택된 요소를 JSON/이미지로 내보내기
+- **🔄 실시간 연동**: Figma ↔ 웹앱 실시간 데이터 전송
+- **📱 프론트엔드 활용**: API를 통한 디자인 데이터 활용
+
+### 4. API 엔드포인트
+
+- `GET /api/figma` - API 상태 확인
+- `POST /api/figma` - Figma 플러그인에서 데이터 수신
+- `/figma` - Figma 연동 전용 페이지
 
 ## 추가 리소스
 
