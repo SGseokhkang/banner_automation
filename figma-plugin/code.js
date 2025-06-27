@@ -1,58 +1,51 @@
 // Figma Plugin Main Code
 // This runs in the Figma plugin sandbox
 
-// Show the plugin UI (URL is set in manifest.json)
-figma.showUI("", { 
+// Show the plugin UI with external URL
+figma.showUI("https://banner-automation-rnv1u5fop-seokhkangs-projects.vercel.app/figma", { 
   width: 480, 
   height: 640,
   themeColors: true 
 });
 
 // Handle messages from UI
-figma.ui.onmessage = async (msg) => {
+figma.ui.onmessage = function(msg) {
   console.log('Received message:', msg);
 
-  switch (msg.type) {
-    case 'get-selection':
-      handleGetSelection();
-      break;
-    
-    case 'get-page-data':
-      handleGetPageData();
-      break;
-    
-    case 'create-banner':
-      await handleCreateBanner(msg.data);
-      break;
-    
-    case 'export-design':
-      await handleExportDesign(msg.data);
-      break;
-    
-    case 'close-plugin':
-      figma.closePlugin();
-      break;
-    
-    default:
-      console.log('Unknown message type:', msg.type);
+  if (msg.type === 'get-selection') {
+    handleGetSelection();
+  } else if (msg.type === 'get-page-data') {
+    handleGetPageData();
+  } else if (msg.type === 'create-banner') {
+    handleCreateBanner(msg.data);
+  } else if (msg.type === 'export-design') {
+    handleExportDesign(msg.data);
+  } else if (msg.type === 'close-plugin') {
+    figma.closePlugin();
+  } else {
+    console.log('Unknown message type:', msg.type);
   }
 };
 
 // Get selected elements
 function handleGetSelection() {
-  const selection = figma.currentPage.selection;
-  const selectionData = selection.map(node => ({
-    id: node.id,
-    name: node.name,
-    type: node.type,
-    x: node.x,
-    y: node.y,
-    width: node.width,
-    height: node.height,
-    // Add more properties as needed
-    fills: node.fills,
-    effects: node.effects
-  }));
+  var selection = figma.currentPage.selection;
+  var selectionData = [];
+  
+  for (var i = 0; i < selection.length; i++) {
+    var node = selection[i];
+    selectionData.push({
+      id: node.id,
+      name: node.name,
+      type: node.type,
+      x: node.x,
+      y: node.y,
+      width: node.width,
+      height: node.height,
+      fills: node.fills || [],
+      effects: node.effects || []
+    });
+  }
 
   figma.ui.postMessage({
     type: 'selection-data',
@@ -62,11 +55,12 @@ function handleGetSelection() {
 
 // Get current page data
 function handleGetPageData() {
-  const page = figma.currentPage;
-  const pageData = {
-    id: page.id,
-    name: page.name,
-    children: page.children.map(node => ({
+  var page = figma.currentPage;
+  var children = [];
+  
+  for (var i = 0; i < page.children.length; i++) {
+    var node = page.children[i];
+    children.push({
       id: node.id,
       name: node.name,
       type: node.type,
@@ -74,7 +68,13 @@ function handleGetPageData() {
       y: node.y,
       width: node.width,
       height: node.height
-    }))
+    });
+  }
+  
+  var pageData = {
+    id: page.id,
+    name: page.name,
+    children: children
   };
 
   figma.ui.postMessage({
@@ -84,10 +84,10 @@ function handleGetPageData() {
 }
 
 // Create banner from template
-async function handleCreateBanner(data) {
+function handleCreateBanner(data) {
   try {
     // Create a new frame for the banner
-    const frame = figma.createFrame();
+    var frame = figma.createFrame();
     frame.name = data.name || 'Generated Banner';
     frame.resize(data.width || 800, data.height || 400);
     
@@ -101,27 +101,43 @@ async function handleCreateBanner(data) {
     
     // Add text if provided
     if (data.text) {
-      const textNode = figma.createText();
-      await figma.loadFontAsync({ family: "Inter", style: "Regular" });
-      textNode.characters = data.text;
-      textNode.fontSize = data.fontSize || 24;
-      textNode.x = data.textX || 50;
-      textNode.y = data.textY || 50;
-      frame.appendChild(textNode);
+      figma.loadFontAsync({ family: "Inter", style: "Regular" }).then(function() {
+        var textNode = figma.createText();
+        textNode.characters = data.text;
+        textNode.fontSize = data.fontSize || 24;
+        textNode.x = data.textX || 50;
+        textNode.y = data.textY || 50;
+        frame.appendChild(textNode);
+        
+        // Select the created frame
+        figma.currentPage.selection = [frame];
+        figma.viewport.scrollAndZoomIntoView([frame]);
+        
+        figma.ui.postMessage({
+          type: 'banner-created',
+          data: { id: frame.id, name: frame.name }
+        });
+      }).catch(function(error) {
+        console.error('Error loading font:', error);
+        figma.ui.postMessage({
+          type: 'error',
+          message: 'Failed to load font: ' + error.message
+        });
+      });
+    } else {
+      // Center the frame
+      frame.x = 0;
+      frame.y = 0;
+      
+      // Select the created frame
+      figma.currentPage.selection = [frame];
+      figma.viewport.scrollAndZoomIntoView([frame]);
+      
+      figma.ui.postMessage({
+        type: 'banner-created',
+        data: { id: frame.id, name: frame.name }
+      });
     }
-    
-    // Center the frame
-    frame.x = 0;
-    frame.y = 0;
-    
-    // Select the created frame
-    figma.currentPage.selection = [frame];
-    figma.viewport.scrollAndZoomIntoView([frame]);
-    
-    figma.ui.postMessage({
-      type: 'banner-created',
-      data: { id: frame.id, name: frame.name }
-    });
     
   } catch (error) {
     console.error('Error creating banner:', error);
@@ -133,39 +149,70 @@ async function handleCreateBanner(data) {
 }
 
 // Export design data
-async function handleExportDesign(options) {
+function handleExportDesign(options) {
   try {
-    const selection = figma.currentPage.selection;
+    var selection = figma.currentPage.selection;
     if (selection.length === 0) {
       throw new Error('No elements selected');
     }
     
-    const exportData = [];
+    var exportData = [];
+    var completed = 0;
+    var total = selection.length;
     
-    for (const node of selection) {
+    function processNode(index) {
+      if (index >= total) {
+        figma.ui.postMessage({
+          type: 'export-complete',
+          data: exportData
+        });
+        return;
+      }
+      
+      var node = selection[index];
+      
       // Export as image if requested
       if (options.includeImages && (node.type === 'FRAME' || node.type === 'COMPONENT')) {
-        const imageBytes = await node.exportAsync({
+        node.exportAsync({
           format: 'PNG',
           constraint: { type: 'SCALE', value: options.scale || 1 }
-        });
-        
-        // Convert to base64
-        const base64 = figma.base64Encode(imageBytes);
-        
-        exportData.push({
-          id: node.id,
-          name: node.name,
-          type: node.type,
-          image: `data:image/png;base64,${base64}`,
-          properties: {
-            x: node.x,
-            y: node.y,
-            width: node.width,
-            height: node.height,
-            fills: node.fills,
-            effects: node.effects
-          }
+        }).then(function(imageBytes) {
+          // Convert to base64
+          var base64 = figma.base64Encode(imageBytes);
+          
+          exportData.push({
+            id: node.id,
+            name: node.name,
+            type: node.type,
+            image: 'data:image/png;base64,' + base64,
+            properties: {
+              x: node.x,
+              y: node.y,
+              width: node.width,
+              height: node.height,
+              fills: node.fills || [],
+              effects: node.effects || []
+            }
+          });
+          
+          processNode(index + 1);
+        }).catch(function(error) {
+          console.error('Error exporting image:', error);
+          exportData.push({
+            id: node.id,
+            name: node.name,
+            type: node.type,
+            error: error.message,
+            properties: {
+              x: node.x,
+              y: node.y,
+              width: node.width,
+              height: node.height,
+              fills: node.fills || [],
+              effects: node.effects || []
+            }
+          });
+          processNode(index + 1);
         });
       } else {
         exportData.push({
@@ -177,17 +224,15 @@ async function handleExportDesign(options) {
             y: node.y,
             width: node.width,
             height: node.height,
-            fills: node.fills,
-            effects: node.effects
+            fills: node.fills || [],
+            effects: node.effects || []
           }
         });
+        processNode(index + 1);
       }
     }
     
-    figma.ui.postMessage({
-      type: 'export-complete',
-      data: exportData
-    });
+    processNode(0);
     
   } catch (error) {
     console.error('Error exporting design:', error);

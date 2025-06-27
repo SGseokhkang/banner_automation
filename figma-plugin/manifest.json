@@ -3,7 +3,7 @@
   "id": "banner-automation",
   "api": "1.0.0",
   "main": "code.js",
-  "ui": "https://banner-automation-rnv1u5fop-seokhkangs-projects.vercel.app/",
+  "ui": "https://banner-automation-rnv1u5fop-seokhkangs-projects.vercel.app/figma",
   "documentAccess": "dynamic-page",
   "networkAccess": {
     "allowedDomains": [
