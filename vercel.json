@@ -5,10 +5,10 @@
   "regions": ["icn1"],
   "functions": {
     "src/app/**/*.ts": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs18.x"
     },
     "src/app/**/*.tsx": {
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs18.x"
     }
   },
   "headers": [
