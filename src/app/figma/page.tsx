@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 interface FigmaData {
   id: string;
   name: string;
   type: string;
-  properties: any;
+  properties: Record<string, unknown>;
   image?: string;
   timestamp?: string;
 }
@@ -120,7 +121,7 @@ export default function FigmaIntegrationPage() {
               <h3 className="text-lg font-semibold text-green-600 mb-2">2. 데이터 전송하기</h3>
               <ol className="text-gray-700 space-y-1 list-decimal list-inside">
                 <li>Figma에서 원하는 요소들을 선택</li>
-                <li>플러그인에서 "프론트엔드로 내보내기" 클릭</li>
+                <li>플러그인에서 &ldquo;프론트엔드로 내보내기&rdquo; 클릭</li>
                 <li>이 페이지에서 실시간으로 데이터 확인</li>
               </ol>
             </div>
@@ -166,10 +167,13 @@ export default function FigmaIntegrationPage() {
 
                   {item.image && (
                     <div className="mb-4">
-                      <img 
+                      <Image 
                         src={item.image} 
                         alt={item.name}
+                        width={800}
+                        height={400}
                         className="max-w-full h-auto max-h-64 rounded-lg border"
+                        unoptimized
                       />
                     </div>
                   )}
