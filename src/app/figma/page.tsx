@@ -77,7 +77,7 @@ export default function FigmaIntegrationPage() {
   };
 
   // Figma 플러그인으로 메시지 전송
-  const sendMessageToPlugin = (type: string, data?: any) => {
+  const sendMessageToPlugin = (type: string, data?: Record<string, unknown>) => {
     if (window.parent !== window) {
       window.parent.postMessage({ pluginMessage: { type, data } }, '*');
     }
