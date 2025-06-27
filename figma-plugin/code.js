@@ -1,10 +1,10 @@
 // Figma Plugin Main Code
 // This runs in the Figma plugin sandbox
 
-// Show the plugin UI
-figma.showUI(__html__, { 
-  width: 400, 
-  height: 600,
+// Show the plugin UI (URL is set in manifest.json)
+figma.showUI("", { 
+  width: 480, 
+  height: 640,
   themeColors: true 
 });
 

@@ -24,6 +24,18 @@ export default function FigmaIntegrationPage() {
       
       console.log('Received message from Figma:', event.data);
       
+      // Figma 플러그인에서 온 메시지 처리
+      if (event.data.pluginMessage) {
+        const { type, data } = event.data.pluginMessage;
+        
+        if (type === 'export-complete') {
+          setFigmaData(prev => [...prev, ...data]);
+        } else if (type === 'selection-data') {
+          setFigmaData(prev => [...prev, ...data]);
+        }
+      }
+      
+      // 기존 방식도 유지
       if (event.data.type === 'figma-export-data') {
         setFigmaData(prev => [...prev, ...event.data.data]);
       }
@@ -64,6 +76,22 @@ export default function FigmaIntegrationPage() {
     }
   };
 
+  // Figma 플러그인으로 메시지 전송
+  const sendMessageToPlugin = (type: string, data?: any) => {
+    if (window.parent !== window) {
+      window.parent.postMessage({ pluginMessage: { type, data } }, '*');
+    }
+  };
+
+  // 플러그인 액션 함수들
+  const getSelectionFromPlugin = () => {
+    sendMessageToPlugin('get-selection');
+  };
+
+  const exportFromPlugin = () => {
+    sendMessageToPlugin('export-design', { includeImages: true, scale: 2 });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-8">
       <div className="max-w-6xl mx-auto">
@@ -84,6 +112,20 @@ export default function FigmaIntegrationPage() {
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
             >
               {isLoading ? '테스트 중...' : '🔗 API 연결 테스트'}
+            </button>
+            
+            <button
+              onClick={getSelectionFromPlugin}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              🎯 선택 요소 가져오기
+            </button>
+            
+            <button
+              onClick={exportFromPlugin}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              📤 플러그인에서 내보내기
             </button>
             
             <button
